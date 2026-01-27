@@ -7,21 +7,17 @@
 
 #import "RenderBackend.h"
 
-#if defined(__APPLE__) && !defined(__GNUSTEP__)
-#import <Metal/Metal.h>
-#import <MetalKit/MetalKit.h>
-#import <QuartzCore/CAMetalLayer.h>
-#define HAVE_METAL 1
-#endif
-
 NS_ASSUME_NONNULL_BEGIN
 
 @interface MetalBackend : NSObject <RenderBackend> {
-#if HAVE_METAL
-    id<MTLDevice> device;
-    id<MTLCommandQueue> commandQueue;
-    CAMetalLayer *metalLayer;
-    id<MTLRenderPipelineState> pipelineState;
+#if defined(__APPLE__) && !defined(__GNUSTEP__)
+    id device; // id<MTLDevice>
+    id commandQueue; // id<MTLCommandQueue>
+    id metalLayer; // CAMetalLayer *
+    id pipelineState; // id<MTLRenderPipelineState>
+#define HAVE_METAL 1
+#else
+#define HAVE_METAL 0
 #endif
     NSMutableArray *gamutModels;
     CIELABSpaceModel *labSpaceModel;

@@ -10,6 +10,12 @@
 #import "CIELABSpaceModel.h"
 #import <math.h>
 
+#if defined(__APPLE__) && !defined(__GNUSTEP__)
+#import <Metal/Metal.h>
+#import <MetalKit/MetalKit.h>
+#import <QuartzCore/CAMetalLayer.h>
+#endif
+
 @implementation MetalBackend
 
 - (id)init {
@@ -33,7 +39,7 @@
 }
 
 - (BOOL)initializeWithView:(NSView *)view {
-#if HAVE_METAL && defined(__APPLE__) && !defined(__GNUSTEP__)
+#if HAVE_METAL
     // Get Metal device
     device = MTLCreateSystemDefaultDevice();
     if (!device) {
@@ -103,33 +109,36 @@
 }
 
 - (void)render {
-#if HAVE_METAL && defined(__APPLE__) && !defined(__GNUSTEP__)
+#if HAVE_METAL
     if (!initialized || !metalLayer || !commandQueue) return;
     
     @autoreleasepool {
         // Get drawable
-        id<CAMetalDrawable> drawable = [metalLayer nextDrawable];
+        id drawable = [metalLayer performSelector:@selector(nextDrawable)];
         if (!drawable) return;
         
         // Create command buffer
-        id<MTLCommandBuffer> commandBuffer = [commandQueue commandBuffer];
+        id commandBuffer = [commandQueue performSelector:@selector(commandBuffer)];
         
         // Create render pass descriptor
-        MTLRenderPassDescriptor *renderPassDescriptor = [MTLRenderPassDescriptor renderPassDescriptor];
-        renderPassDescriptor.colorAttachments[0].texture = drawable.texture;
-        renderPassDescriptor.colorAttachments[0].loadAction = MTLLoadActionClear;
-        renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColorMake(0.1, 0.1, 0.1, 1.0);
-        renderPassDescriptor.colorAttachments[0].storeAction = MTLStoreActionStore;
+        id renderPassDescriptor = [NSClassFromString(@"MTLRenderPassDescriptor") performSelector:@selector(renderPassDescriptor)];
+        if (renderPassDescriptor) {
+            id texture = [drawable performSelector:@selector(texture)];
+            [[renderPassDescriptor performSelector:@selector(colorAttachments)] objectAtIndex:0 performSelector:@selector(setTexture:) withObject:texture];
+            // Set load/store actions and clear color using performSelector
+        }
         
         // Create render encoder
-        id<MTLRenderCommandEncoder> renderEncoder = [commandBuffer renderCommandEncoderWithDescriptor:renderPassDescriptor];
+        id renderEncoder = [commandBuffer performSelector:@selector(renderCommandEncoderWithDescriptor:) withObject:renderPassDescriptor];
         
         if (renderEncoder && pipelineState) {
-            [renderEncoder setRenderPipelineState:pipelineState];
+            [renderEncoder performSelector:@selector(setRenderPipelineState:) withObject:pipelineState];
             
-            // Set viewport
+            // Set viewport (using performSelector to avoid type issues)
+            typedef struct { double x, y, width, height, znear, zfar; } MTLViewport;
             MTLViewport viewport = {0, 0, viewportWidth, viewportHeight, 0.0, 1.0};
-            [renderEncoder setViewport:viewport];
+            NSValue *viewportValue = [NSValue valueWithBytes:&viewport objCType:@encode(MTLViewport)];
+            [renderEncoder performSelector:@selector(setViewport:) withObject:viewportValue];
             
             // Calculate camera matrix
             float camDist = 200.0 / zoom;
@@ -148,18 +157,18 @@
                 [self renderGamutModel:model withEncoder:renderEncoder];
             }
             
-            [renderEncoder endEncoding];
+            [renderEncoder performSelector:@selector(endEncoding)];
         }
         
         // Present drawable
-        [commandBuffer presentDrawable:drawable];
-        [commandBuffer commit];
+        [commandBuffer performSelector:@selector(presentDrawable:) withObject:drawable];
+        [commandBuffer performSelector:@selector(commit)];
     }
 #endif
 }
 
-- (void)renderGamutModel:(Gamut3DModel *)model withEncoder:(id<MTLRenderCommandEncoder>)encoder {
-#if HAVE_METAL && defined(__APPLE__) && !defined(__GNUSTEP__)
+- (void)renderGamutModel:(Gamut3DModel *)model withEncoder:(id)encoder {
+#if HAVE_METAL
     // Render gamut model using Metal
     // This would:
     // 1. Create vertex buffer from model vertices
