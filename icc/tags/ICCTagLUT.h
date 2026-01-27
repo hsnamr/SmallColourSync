@@ -22,6 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, retain) NSData *lutData;
 
 - (void)lookupInput:(const double *)input output:(double *)output;
+- (void)loadFromPipeline:(void *)pipeline; // Load from cmsPipeline
 
 @end
 

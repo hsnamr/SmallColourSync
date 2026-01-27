@@ -7,6 +7,10 @@
 
 #import "ICCTagTRC.h"
 
+#ifdef HAVE_LCMS
+#include <lcms2.h>
+#endif
+
 @implementation ICCTagTRC
 
 @synthesize curvePoints;
@@ -49,6 +53,28 @@
         // Parametric curve (simplified - would need full parametric formula)
         return position;
     }
+}
+
+- (void)loadFromToneCurve:(void *)toneCurve {
+#ifdef HAVE_LCMS
+    cmsToneCurve *curve = (cmsToneCurve *)toneCurve;
+    if (!curve) return;
+    
+    // Sample the curve at regular intervals
+    NSMutableArray *points = [NSMutableArray array];
+    NSUInteger sampleCount = 256; // Sample 256 points
+    NSUInteger i;
+    
+    for (i = 0; i < sampleCount; i++) {
+        double input = (double)i / (sampleCount - 1);
+        cmsFloat32Number output = cmsEvalToneCurveFloat(curve, input);
+        [points addObject:[NSNumber numberWithDouble:output]];
+    }
+    
+    [curvePoints release];
+    curvePoints = [points retain];
+    curveType = 1; // Table-based
+#endif
 }
 
 - (void)dealloc {

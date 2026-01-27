@@ -21,6 +21,9 @@ NS_ASSUME_NONNULL_BEGIN
 // Generate sample points in RGB space and convert to Lab
 - (NSArray *)sampleRGBSpaceWithResolution:(NSUInteger)resolution;
 
+// Compute convex hull of gamut points (returns face indices)
+- (NSArray *)computeConvexHullFaces:(NSArray *)points;
+
 @end
 
 NS_ASSUME_NONNULL_END

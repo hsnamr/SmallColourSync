@@ -18,6 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) NSUInteger curveType;
 
 - (double)valueAtPosition:(double)position; // 0.0 to 1.0
+- (void)loadFromToneCurve:(void *)toneCurve; // Load from cmsToneCurve
 
 @end
 

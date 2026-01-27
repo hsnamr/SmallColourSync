@@ -115,4 +115,17 @@
     return points;
 }
 
+- (NSArray *)computeConvexHullFaces:(NSArray *)points {
+    // Simplified convex hull computation
+    // A full implementation would use Qhull or CGAL for proper 3D convex hull
+    // For now, return empty array - faces would be computed by proper library
+    
+    // This is a placeholder - in a full implementation, we would:
+    // 1. Extract point coordinates from NSArray
+    // 2. Call Qhull or CGAL to compute convex hull
+    // 3. Return face indices as NSArray of NSArrays
+    
+    return [NSArray array];
+}
+
 @end
