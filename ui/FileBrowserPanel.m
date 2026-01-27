@@ -7,6 +7,7 @@
 
 #import "FileBrowserPanel.h"
 #import "AppController.h"
+#import "SSFileDialog.h"
 
 @implementation FileBrowserPanel
 
@@ -32,13 +33,14 @@
 }
 
 - (void)openProfile:(id)sender {
-    NSOpenPanel *openPanel = [NSOpenPanel openPanel];
-    [openPanel setAllowedFileTypes:[NSArray arrayWithObject:@"icc"]];
-    [openPanel setCanChooseFiles:YES];
-    [openPanel setCanChooseDirectories:NO];
+    SSFileDialog *openDialog = [SSFileDialog openDialog];
+    [openDialog setAllowedFileTypes:[NSArray arrayWithObject:@"icc"]];
+    [openDialog setCanChooseFiles:YES];
+    [openDialog setCanChooseDirectories:NO];
     
-    if ([openPanel runModal] == NSModalResponseOK) {
-        NSString *path = [[openPanel URL] path];
+    NSArray *urls = [openDialog showModal];
+    if (urls && [urls count] > 0) {
+        NSString *path = [[urls objectAtIndex:0] path];
         NSError *error = nil;
         if (![appController loadProfileFromPath:path error:&error]) {
             NSAlert *alert = [NSAlert alertWithError:error];
@@ -48,11 +50,12 @@
 }
 
 - (void)saveProfile:(id)sender {
-    NSSavePanel *savePanel = [NSSavePanel savePanel];
-    [savePanel setAllowedFileTypes:[NSArray arrayWithObject:@"icc"]];
+    SSFileDialog *saveDialog = [SSFileDialog saveDialog];
+    [saveDialog setAllowedFileTypes:[NSArray arrayWithObject:@"icc"]];
     
-    if ([savePanel runModal] == NSModalResponseOK) {
-        NSString *path = [[savePanel URL] path];
+    NSArray *urls = [saveDialog showModal];
+    if (urls && [urls count] > 0) {
+        NSString *path = [[urls objectAtIndex:0] path];
         NSError *error = nil;
         if (![appController saveProfileToPath:path error:&error]) {
             NSAlert *alert = [NSAlert alertWithError:error];

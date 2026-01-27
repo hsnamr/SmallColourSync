@@ -9,6 +9,7 @@
 #import "OpenGLBackend.h"
 #import "VulkanBackend.h"
 #import "MetalBackend.h"
+#import "SSPlatform.h"
 
 @implementation RenderBackendFactory
 
@@ -26,15 +27,15 @@
 }
 
 + (RenderBackendType)defaultBackendType {
-#if defined(__APPLE__) && !defined(__GNUSTEP__)
-    // macOS: Prefer Metal, fallback to OpenGL
-    return RenderBackendTypeMetal;
-#elif defined(__GNUSTEP__) || defined(__linux__)
-    // Linux: Prefer Vulkan, fallback to OpenGL
-    return RenderBackendTypeVulkan;
-#else
-    return RenderBackendTypeOpenGL;
-#endif
+    if ([SSPlatform isMacOS]) {
+        // macOS: Prefer Metal, fallback to OpenGL
+        return RenderBackendTypeMetal;
+    } else if ([SSPlatform isLinux]) {
+        // Linux: Prefer Vulkan, fallback to OpenGL
+        return RenderBackendTypeVulkan;
+    } else {
+        return RenderBackendTypeOpenGL;
+    }
 }
 
 @end
