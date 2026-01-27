@@ -8,6 +8,7 @@
 #import "VulkanBackend.h"
 #import "Gamut3DModel.h"
 #import "CIELABSpaceModel.h"
+#import "VulkanShaderLoader.h"
 #import <math.h>
 
 #if (defined(__GNUSTEP__) || defined(__linux__)) && defined(HAVE_VULKAN)
@@ -329,15 +330,67 @@ typedef struct {
         return;
     }
     
-    // Note: Full implementation would create shader modules from SPIR-V
-    // For now, we create a pipeline structure without actual shaders
-    // This is a placeholder that can be expanded when shaders are available
+    // Try to load shaders
+    // Look for shaders in app bundle or current directory
+    NSString *shaderPath = nil;
+    NSBundle *bundle = [NSBundle mainBundle];
+    if (bundle) {
+        shaderPath = [bundle resourcePath];
+    }
+    if (!shaderPath) {
+        shaderPath = @".";
+    }
     
-    // Graphics pipeline create info (without shader stages for now)
+    NSString *vertPath = [shaderPath stringByAppendingPathComponent:@"simple.vert.spv"];
+    NSString *fragPath = [shaderPath stringByAppendingPathComponent:@"simple.frag.spv"];
+    
+    NSData *vertShaderCode = [VulkanShaderLoader loadShaderFromFile:vertPath];
+    NSData *fragShaderCode = [VulkanShaderLoader loadShaderFromFile:fragPath];
+    
+    VkShaderModule vertModule = VK_NULL_HANDLE;
+    VkShaderModule fragModule = VK_NULL_HANDLE;
+    
+    if (vertShaderCode) {
+        void *module = [VulkanShaderLoader createShaderModule:vertShaderCode device:device];
+        if (module) {
+            vertModule = *(VkShaderModule *)module;
+            vertShaderModule = module;
+        }
+    }
+    
+    if (fragShaderCode) {
+        void *module = [VulkanShaderLoader createShaderModule:fragShaderCode device:device];
+        if (module) {
+            fragModule = *(VkShaderModule *)module;
+            fragShaderModule = module;
+        }
+    }
+    
+    // Create shader stages
+    VkPipelineShaderStageCreateInfo shaderStages[2] = {0};
+    uint32_t stageCount = 0;
+    
+    if (vertModule != VK_NULL_HANDLE) {
+        shaderStages[stageCount].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        shaderStages[stageCount].stage = VK_SHADER_STAGE_VERTEX_BIT;
+        shaderStages[stageCount].module = vertModule;
+        shaderStages[stageCount].pName = "main";
+        stageCount++;
+    }
+    
+    if (fragModule != VK_NULL_HANDLE) {
+        shaderStages[stageCount].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        shaderStages[stageCount].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+        shaderStages[stageCount].module = fragModule;
+        shaderStages[stageCount].pName = "main";
+        stageCount++;
+    }
+    
+    // Graphics pipeline create info
     VkGraphicsPipelineCreateInfo pipelineInfo = {0};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-    pipelineInfo.stageCount = 0; // Would be 2 (vertex + fragment) with shaders
-    pipelineInfo.pStages = NULL; // Would point to shader stage infos
+    pipelineInfo.stageCount = stageCount;
+    pipelineInfo.pStages = (stageCount > 0) ? shaderStages : NULL;
     pipelineInfo.pVertexInputState = &vertexInputInfo;
     pipelineInfo.pInputAssemblyState = &inputAssembly;
     pipelineInfo.pViewportState = &viewportState;
