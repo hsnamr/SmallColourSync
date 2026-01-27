@@ -1,0 +1,32 @@
+# Build artifacts
+*.o
+*.so
+*.a
+*.d
+*.obj
+*.exe
+SmallICCer.app/
+SmallICCer/
+obj/
+build/
+derived_src/
+
+# GNUstep
+.stamp
+*-class-list
+
+# Xcode
+*.xcodeproj/
+*.xcworkspace/
+*.xcuserdata/
+DerivedData/
+
+# macOS
+.DS_Store
+
+# Editor
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
