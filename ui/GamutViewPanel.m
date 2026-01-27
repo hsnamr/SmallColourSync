@@ -59,6 +59,25 @@
     [renderer render];
 }
 
+- (void)mouseDown:(NSEvent *)event {
+    lastMouseLocation = [event locationInWindow];
+}
+
+- (void)mouseDragged:(NSEvent *)event {
+    NSPoint currentLocation = [event locationInWindow];
+    NSPoint delta = NSMakePoint(currentLocation.x - lastMouseLocation.x,
+                                currentLocation.y - lastMouseLocation.y);
+    [renderer handleMouseDrag:delta];
+    lastMouseLocation = currentLocation;
+    [self setNeedsDisplay:YES];
+}
+
+- (void)scrollWheel:(NSEvent *)event {
+    float delta = [event deltaY] * 0.1;
+    [renderer handleZoom:delta];
+    [self setNeedsDisplay:YES];
+}
+
 - (void)dealloc {
     [renderer release];
     [super dealloc];

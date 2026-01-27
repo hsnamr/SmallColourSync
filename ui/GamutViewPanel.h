@@ -15,6 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface GamutViewPanel : NSOpenGLView {
     Renderer3D *renderer;
     ICCProfile *currentProfile;
+    NSPoint lastMouseLocation;
 }
 
 - (void)displayProfile:(ICCProfile *)profile;

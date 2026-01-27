@@ -41,23 +41,37 @@
 #if HAVE_OPENGL
     [glContext makeCurrentContext];
     
+    // Get viewport size
+    GLint viewport[4];
+    glGetIntegerv(GL_VIEWPORT, viewport);
+    float aspect = (float)viewport[2] / (float)viewport[3];
+    
     glClearColor(0.1, 0.1, 0.1, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(45.0, 1.0, 0.1, 1000.0);
+    gluPerspective(45.0, aspect, 0.1, 1000.0);
     
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    gluLookAt(cameraX, cameraY, cameraZ,
+    
+    // Calculate camera position based on rotation
+    float camDist = 200.0 / zoom;
+    float radX = rotationX * M_PI / 180.0;
+    float radY = rotationY * M_PI / 180.0;
+    
+    float camX = camDist * sin(radY) * cos(radX);
+    float camY = camDist * sin(radX);
+    float camZ = camDist * cos(radY) * cos(radX);
+    
+    gluLookAt(camX, camY, camZ,
               0.0, 0.0, 0.0,
               0.0, 1.0, 0.0);
-    
-    glRotatef(rotationX, 1.0, 0.0, 0.0);
-    glRotatef(rotationY, 0.0, 1.0, 0.0);
-    glScalef(zoom, zoom, zoom);
     
     // Render Lab space axes and grid
     if (labSpaceModel) {
