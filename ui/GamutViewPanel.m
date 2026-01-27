@@ -15,19 +15,39 @@
 @implementation GamutViewPanel
 
 - (id)init {
-    NSOpenGLPixelFormatAttribute attrs[] = {
-        NSOpenGLPFADoubleBuffer,
-        NSOpenGLPFADepthSize, 24,
-        0
-    };
-    NSOpenGLPixelFormat *pixelFormat = [[NSOpenGLPixelFormat alloc] initWithAttributes:attrs];
-    self = [super initWithFrame:NSMakeRect(0, 0, 800, 600) pixelFormat:pixelFormat];
-    [pixelFormat release];
-    
+    return [self initWithBackendType:[RenderBackendFactory defaultBackendType]];
+}
+
+- (id)initWithBackendType:(RenderBackendType)backendType {
+    self = [super initWithFrame:NSMakeRect(0, 0, 800, 600)];
     if (self) {
-        renderer = [[Renderer3D alloc] initWithView:self];
+        preferredBackend = backendType;
+        
+        // For OpenGL, we need NSOpenGLView
+        if (backendType == RenderBackendTypeOpenGL) {
+            NSOpenGLPixelFormatAttribute attrs[] = {
+                NSOpenGLPFADoubleBuffer,
+                NSOpenGLPFADepthSize, 24,
+                0
+            };
+            NSOpenGLPixelFormat *pixelFormat = [[NSOpenGLPixelFormat alloc] initWithAttributes:attrs];
+            NSOpenGLView *glView = [[NSOpenGLView alloc] initWithFrame:[self bounds] pixelFormat:pixelFormat];
+            [pixelFormat release];
+            [glView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+            [self addSubview:glView];
+            [glView release];
+        }
+        
+        renderer = [[Renderer3D alloc] initWithView:self backendType:backendType];
     }
     return self;
+}
+
+- (void)setPreferredBackend:(RenderBackendType)backendType {
+    preferredBackend = backendType;
+    // Reinitialize renderer with new backend
+    [renderer release];
+    renderer = [[Renderer3D alloc] initWithView:self backendType:backendType];
 }
 
 - (void)displayProfile:(ICCProfile *)profile {
@@ -56,6 +76,8 @@
 }
 
 - (void)drawRect:(NSRect)dirtyRect {
+    NSRect bounds = [self bounds];
+    [renderer setViewportWidth:bounds.size.width height:bounds.size.height];
     [renderer render];
 }
 

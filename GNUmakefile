@@ -48,6 +48,20 @@ ifeq ($(GLU_LIBS),)
   endif
 endif
 
+# Try to find Vulkan (for Linux)
+VULKAN_INCLUDE := $(shell pkg-config --cflags vulkan 2>/dev/null)
+VULKAN_LIBS := $(shell pkg-config --libs vulkan 2>/dev/null)
+ifeq ($(VULKAN_INCLUDE),)
+  ifneq ($(wildcard /usr/include/vulkan/vulkan.h),)
+    VULKAN_INCLUDE := -I/usr/include
+    ifneq ($(wildcard /usr/lib/x86_64-linux-gnu/libvulkan.so),)
+      VULKAN_LIBS := -lvulkan
+    else ifneq ($(wildcard /usr/lib/libvulkan.so),)
+      VULKAN_LIBS := -lvulkan
+    endif
+  endif
+endif
+
 # Objective-C source files
 SmallICCer_OBJC_FILES = \
 	main.m \
@@ -69,6 +83,10 @@ SmallICCer_OBJC_FILES = \
 	visualization/CIELABSpaceModel.m \
 	visualization/Renderer3D.m \
 	visualization/GamutComparator.m \
+	visualization/RenderBackend.m \
+	visualization/OpenGLBackend.m \
+	visualization/VulkanBackend.m \
+	visualization/MetalBackend.m \
 	ui/MainWindow.m \
 	ui/ProfileInspectorPanel.m \
 	ui/TagEditorPanel.m \
@@ -96,6 +114,10 @@ SmallICCer_HEADER_FILES = \
 	visualization/CIELABSpaceModel.h \
 	visualization/Renderer3D.h \
 	visualization/GamutComparator.h \
+	visualization/RenderBackend.h \
+	visualization/OpenGLBackend.h \
+	visualization/VulkanBackend.h \
+	visualization/MetalBackend.h \
 	ui/MainWindow.h \
 	ui/ProfileInspectorPanel.h \
 	ui/TagEditorPanel.h \
@@ -113,12 +135,20 @@ SmallICCer_INCLUDE_DIRS = \
 	-Iui \
 	-I../SmallStep/SmallStep/Core \
 	-I../SmallStep/SmallStep/Platform/Linux \
-	$(LCMS_INCLUDE)
+	$(LCMS_INCLUDE) \
+	$(VULKAN_INCLUDE)
 
 # Define HAVE_LCMS if headers and library are available
 ifneq ($(LCMS_INCLUDE),)
   ifneq ($(LCMS_LIBS),)
     SmallICCer_OBJCFLAGS += -DHAVE_LCMS=1
+  endif
+endif
+
+# Define HAVE_VULKAN if headers and library are available (Linux only)
+ifneq ($(VULKAN_INCLUDE),)
+  ifneq ($(VULKAN_LIBS),)
+    SmallICCer_OBJCFLAGS += -DHAVE_VULKAN=1
   endif
 endif
 
@@ -151,6 +181,11 @@ ifneq ($(GLU_LIBS),)
   LIBRARIES += $(GLU_LIBS)
 endif
 
+# Add Vulkan if available (Linux only)
+ifneq ($(VULKAN_LIBS),)
+  LIBRARIES += $(VULKAN_LIBS)
+endif
+
 SmallICCer_LIBRARIES_DEPEND_UPON = $(LIBRARIES)
 
 # Linker flags
@@ -167,6 +202,9 @@ ifneq ($(OPENGL_LIBS),)
 endif
 ifneq ($(GLU_LIBS),)
   TOOL_LIBS_LIST += $(GLU_LIBS)
+endif
+ifneq ($(VULKAN_LIBS),)
+  TOOL_LIBS_LIST += $(VULKAN_LIBS)
 endif
 SmallICCer_TOOL_LIBS = $(TOOL_LIBS_LIST)
 
