@@ -86,6 +86,7 @@ SmallICCer_OBJC_FILES = \
 	visualization/RenderBackend.m \
 	visualization/OpenGLBackend.m \
 	visualization/VulkanBackend.m \
+	visualization/VulkanShaderLoader.m \
 	visualization/MetalBackend.m \
 	ui/MainWindow.m \
 	ui/ProfileInspectorPanel.m \
@@ -117,6 +118,7 @@ SmallICCer_HEADER_FILES = \
 	visualization/RenderBackend.h \
 	visualization/OpenGLBackend.h \
 	visualization/VulkanBackend.h \
+	visualization/VulkanShaderLoader.h \
 	visualization/MetalBackend.h \
 	ui/MainWindow.h \
 	ui/ProfileInspectorPanel.h \

@@ -48,6 +48,8 @@ typedef struct {
         renderPass = NULL;
         pipeline = NULL;
         pipelineLayout = NULL;
+        vertShaderModule = NULL;
+        fragShaderModule = NULL;
         commandPool = NULL;
         graphicsQueue = NULL;
         presentQueue = NULL;
@@ -346,8 +348,18 @@ typedef struct {
     pipelineInfo.renderPass = (VkRenderPass)renderPass;
     pipelineInfo.subpass = 0;
     
-    // Note: Pipeline creation will fail without shaders, so we skip it for now
-    // result = vkCreateGraphicsPipelines((VkDevice)device, VK_NULL_HANDLE, 1, &pipelineInfo, NULL, (VkPipeline *)&pipeline);
+    // Create pipeline
+    if (stageCount > 0) {
+        VkPipeline pipelineHandle;
+        result = vkCreateGraphicsPipelines((VkDevice)device, VK_NULL_HANDLE, 1, &pipelineInfo, NULL, &pipelineHandle);
+        if (result == VK_SUCCESS) {
+            void *pipelinePtr = malloc(sizeof(VkPipeline));
+            *(VkPipeline *)pipelinePtr = pipelineHandle;
+            pipeline = pipelinePtr;
+        } else {
+            NSLog(@"Failed to create graphics pipeline: %d", result);
+        }
+    }
 #endif
 }
 
@@ -546,8 +558,19 @@ typedef struct {
         commandPool = NULL;
     }
     if (pipeline) {
-        vkDestroyPipeline((VkDevice)device, (VkPipeline)pipeline, NULL);
+        vkDestroyPipeline((VkDevice)device, *(VkPipeline *)pipeline, NULL);
+        free(pipeline);
         pipeline = NULL;
+    }
+    if (vertShaderModule) {
+        vkDestroyShaderModule((VkDevice)device, *(VkShaderModule *)vertShaderModule, NULL);
+        free(vertShaderModule);
+        vertShaderModule = NULL;
+    }
+    if (fragShaderModule) {
+        vkDestroyShaderModule((VkDevice)device, *(VkShaderModule *)fragShaderModule, NULL);
+        free(fragShaderModule);
+        fragShaderModule = NULL;
     }
     if (pipelineLayout) {
         vkDestroyPipelineLayout((VkDevice)device, (VkPipelineLayout)pipelineLayout, NULL);
@@ -608,19 +631,9 @@ typedef struct {
     }
     
     // Begin render pass (simplified - would use actual framebuffer from swapchain)
-    VkClearValue clearColor = {{{0.1f, 0.1f, 0.1f, 1.0f}}};
-    VkRenderPassBeginInfo renderPassInfo = {0};
-    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassInfo.renderPass = (VkRenderPass)renderPass;
-    renderPassInfo.renderArea.offset.x = 0;
-    renderPassInfo.renderArea.offset.y = 0;
-    renderPassInfo.renderArea.extent.width = (uint32_t)viewportWidth;
-    renderPassInfo.renderArea.extent.height = (uint32_t)viewportHeight;
-    renderPassInfo.clearValueCount = 1;
-    renderPassInfo.pClearValues = &clearColor;
-    
-    // Note: framebuffer would come from swapchain in full implementation
-    // For now, this is a skeleton
+    // Note: In full implementation with swapchain, would use:
+    // VkClearValue clearColor = {{{0.1f, 0.1f, 0.1f, 1.0f}}};
+    // VkRenderPassBeginInfo renderPassInfo = {...};
     // vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
     
     // Set viewport
@@ -643,7 +656,7 @@ typedef struct {
     
     // Bind pipeline (if created)
     if (pipeline) {
-        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, (VkPipeline)pipeline);
+        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, *(VkPipeline *)pipeline);
     }
     
     // Draw gamut models
@@ -658,7 +671,7 @@ typedef struct {
         }
     }
     
-    // End render pass
+    // End render pass (when render pass is begun)
     // vkCmdEndRenderPass(commandBuffer);
     
     // End command buffer

@@ -18,6 +18,8 @@ NS_ASSUME_NONNULL_BEGIN
     void *renderPass; // VkRenderPass
     void *pipeline; // VkPipeline
     void *pipelineLayout; // VkPipelineLayout
+    void *vertShaderModule; // VkShaderModule
+    void *fragShaderModule; // VkShaderModule
     void *commandPool; // VkCommandPool
     void *graphicsQueue; // VkQueue
     void *presentQueue; // VkQueue
