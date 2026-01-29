@@ -42,15 +42,25 @@ run_test() {
             local obj_name=$(basename "$src" .m).o
             local obj_path="tests/obj/${test_name}_${obj_name}"
             echo "  Compiling $src..."
-            if ! gcc $cflags $includes -c "$src" -o "$obj_path" 2>&1 | grep -v "warning:" | grep -v "note:"; then
-                # Check if compilation actually failed (not just warnings)
+            compile_output=$(gcc $cflags $includes -c "$src" -o "$obj_path" 2>&1)
+            compile_status=$?
+            
+            # Filter out warnings and notes, but show errors
+            errors=$(echo "$compile_output" | grep -v "warning:" | grep -v "note:" | grep -E "(error|Error|ERROR)" || true)
+            
+            if [ $compile_status -ne 0 ] || [ ! -z "$errors" ]; then
                 if [ ! -f "$obj_path" ]; then
                     echo "  ERROR: Failed to compile $src"
+                    echo "$errors" | head -5
                     return 1
                 fi
             fi
+            
             if [ -f "$obj_path" ]; then
                 obj_files="$obj_files $obj_path"
+            else
+                echo "  ERROR: Object file not created: $obj_path"
+                return 1
             fi
         else
             echo "  WARNING: Source file not found: $src"
@@ -106,29 +116,56 @@ fi
 COMMON_LIBS="$GNUSTEP_LIB_PATHS $GNUSTEP_BASE_LIBS -pthread"
 
 # Check for LittleCMS
+HAVE_LCMS=0
 if pkg-config --exists lcms2 2>/dev/null; then
     LCMS_CFLAGS=$(pkg-config --cflags lcms2)
     LCMS_LIBS=$(pkg-config --libs lcms2)
     COMMON_CFLAGS="$COMMON_CFLAGS -DHAVE_LCMS=1 $LCMS_CFLAGS"
     COMMON_LIBS="$COMMON_LIBS $LCMS_LIBS"
+    HAVE_LCMS=1
+    echo "LittleCMS found - enabling LCMS tests"
+else
+    echo "LittleCMS not found - LCMS tests will be skipped"
 fi
 
 # Run tests
 run_test "ColorConverter" "color/ColorConverter.m" "$COMMON_INCLUDES" "$COMMON_LIBS" "$COMMON_CFLAGS"
 
-run_test "ICCTagEditing" "icc/ICCProfile.m icc/ICCTag.m icc/tags/ICCTagTRC.m icc/tags/ICCTagMatrix.m icc/tags/ICCTagLUT.m icc/tags/ICCTagMetadata.m" "$COMMON_INCLUDES" "$COMMON_LIBS" "$COMMON_CFLAGS"
+run_test "ICCTagEditing" "icc/ICCProfile.m icc/tags/ICCTag.m icc/tags/ICCTagTRC.m icc/tags/ICCTagMatrix.m icc/tags/ICCTagLUT.m icc/tags/ICCTagMetadata.m" "$COMMON_INCLUDES" "$COMMON_LIBS" "$COMMON_CFLAGS"
 
 run_test "CIELABSpaceModel" "visualization/CIELABSpaceModel.m" "$COMMON_INCLUDES" "$COMMON_LIBS" "$COMMON_CFLAGS"
 
-run_test "RenderBackend" "visualization/RenderBackend.m" "$COMMON_INCLUDES -ISmallStep/SmallStep/Core -I../SmallStep/SmallStep/Core" "$COMMON_LIBS -lgnustep-gui" "$COMMON_CFLAGS"
+# RenderBackend test - only compile backends that are available
+# Skip Vulkan and Metal for now (they require platform-specific headers)
+# The test will still verify backend factory and OpenGL backend creation
+OPENGL_LIBS=""
+GLU_LIBS=""
+if pkg-config --exists gl 2>/dev/null; then
+    OPENGL_LIBS=$(pkg-config --libs gl)
+fi
+if pkg-config --exists glu 2>/dev/null; then
+    GLU_LIBS=$(pkg-config --libs glu)
+fi
+# Fallback to common locations
+if [ -z "$OPENGL_LIBS" ]; then
+    if [ -f "/usr/lib/x86_64-linux-gnu/libGL.so" ] || [ -f "/usr/lib/libGL.so" ]; then
+        OPENGL_LIBS="-lGL"
+    fi
+fi
+if [ -z "$GLU_LIBS" ]; then
+    if [ -f "/usr/lib/x86_64-linux-gnu/libGLU.so" ] || [ -f "/usr/lib/libGLU.so" ]; then
+        GLU_LIBS="-lGLU"
+    fi
+fi
+run_test "RenderBackend" "visualization/RenderBackend.m visualization/OpenGLBackend.m ../SmallStep/SmallStep/Core/SSPlatform.m" "$COMMON_INCLUDES -I../SmallStep/SmallStep/Core" "$COMMON_LIBS -lgnustep-gui $OPENGL_LIBS $GLU_LIBS" "$COMMON_CFLAGS"
 
 # Tests requiring LittleCMS
-if pkg-config --exists lcms2 2>/dev/null; then
-    run_test "ICCParser" "icc/ICCParser.m icc/ICCProfile.m icc/ICCTag.m icc/tags/ICCTagTRC.m icc/tags/ICCTagMatrix.m icc/tags/ICCTagLUT.m icc/tags/ICCTagMetadata.m" "$COMMON_INCLUDES" "$COMMON_LIBS" "$COMMON_CFLAGS"
+if [ "$HAVE_LCMS" = "1" ]; then
+    run_test "ICCParser" "icc/ICCParser.m icc/ICCProfile.m icc/tags/ICCTag.m icc/tags/ICCTagTRC.m icc/tags/ICCTagMatrix.m icc/tags/ICCTagLUT.m icc/tags/ICCTagMetadata.m" "$COMMON_INCLUDES" "$COMMON_LIBS" "$COMMON_CFLAGS"
     
-    run_test "ICCWriter" "icc/ICCWriter.m icc/ICCParser.m icc/ICCProfile.m icc/ICCTag.m icc/tags/ICCTagTRC.m icc/tags/ICCTagMatrix.m icc/tags/ICCTagLUT.m icc/tags/ICCTagMetadata.m" "$COMMON_INCLUDES" "$COMMON_LIBS" "$COMMON_CFLAGS"
+    run_test "ICCWriter" "icc/ICCWriter.m icc/ICCParser.m icc/ICCProfile.m icc/tags/ICCTag.m icc/tags/ICCTagTRC.m icc/tags/ICCTagMatrix.m icc/tags/ICCTagLUT.m icc/tags/ICCTagMetadata.m" "$COMMON_INCLUDES" "$COMMON_LIBS" "$COMMON_CFLAGS"
     
-    run_test "GamutCalculator" "color/GamutCalculator.m color/ColorConverter.m color/ColorSpace.m color/StandardColorSpaces.m icc/ICCProfile.m icc/ICCParser.m icc/ICCTag.m icc/tags/ICCTagTRC.m icc/tags/ICCTagMatrix.m icc/tags/ICCTagLUT.m icc/tags/ICCTagMetadata.m" "$COMMON_INCLUDES" "$COMMON_LIBS" "$COMMON_CFLAGS"
+    run_test "GamutCalculator" "color/GamutCalculator.m color/ColorConverter.m color/ColorSpace.m color/StandardColorSpaces.m icc/ICCProfile.m icc/ICCParser.m icc/tags/ICCTag.m icc/tags/ICCTagTRC.m icc/tags/ICCTagMatrix.m icc/tags/ICCTagLUT.m icc/tags/ICCTagMetadata.m" "$COMMON_INCLUDES" "$COMMON_LIBS" "$COMMON_CFLAGS"
 else
     echo "SKIPPED: ICCParser (LittleCMS not available)"
     echo "SKIPPED: ICCWriter (LittleCMS not available)"

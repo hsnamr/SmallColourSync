@@ -75,12 +75,11 @@ int testParseNonexistentFile() {
 }
 
 #ifdef HAVE_LCMS
-#include <lcms2.h>
-
 int testParseValidProfile() {
     ICCParser *parser = [[ICCParser alloc] init];
     
     // Create a minimal valid ICC profile using LittleCMS
+    // Note: lcms2.h is included via ICCParser.m, so types are available
     
     cmsCIExyY whitePoint;
     cmsWhitePointFromTemp(&whitePoint, 5000); // D50

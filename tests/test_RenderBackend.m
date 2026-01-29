@@ -8,7 +8,21 @@
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 #import "RenderBackend.h"
+
+// Try to find SSPlatform.h
+#if __has_include("SSPlatform.h")
+#import "SSPlatform.h"
+#elif __has_include("../SmallStep/SmallStep/Core/SSPlatform.h")
 #import "../SmallStep/SmallStep/Core/SSPlatform.h"
+#elif __has_include("SmallStep/SmallStep/Core/SSPlatform.h")
+#import "SmallStep/SmallStep/Core/SSPlatform.h"
+#else
+// Fallback: define minimal SSPlatform interface
+@interface SSPlatform : NSObject
++ (BOOL)isMacOS;
++ (BOOL)isLinux;
+@end
+#endif
 
 int testRenderBackendFactory() {
     // Test default backend type

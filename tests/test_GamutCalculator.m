@@ -12,10 +12,6 @@
 #import "StandardColorSpaces.h"
 #import "ColorSpace.h"
 
-#ifdef HAVE_LCMS
-#include <lcms2.h>
-#endif
-
 int testGamutCalculatorInitialization() {
     GamutCalculator *calculator = [[GamutCalculator alloc] init];
     if (!calculator) {

@@ -27,13 +27,12 @@ int testWriterInitialization() {
 }
 
 #ifdef HAVE_LCMS
-#include <lcms2.h>
-
 int testWriteProfile() {
     ICCParser *parser = [[ICCParser alloc] init];
     ICCWriter *writer = [[ICCWriter alloc] init];
     
     // Create a test profile
+    // Note: lcms2.h is included via ICCWriter.m and ICCParser.m
     
     cmsCIExyY whitePoint;
     cmsWhitePointFromTemp(&whitePoint, 5000);

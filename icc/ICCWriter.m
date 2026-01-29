@@ -127,7 +127,15 @@
         }
         
         // Convert signature string to cmsTagSignature
-        cmsTagSignature tagSig = [self tagSignatureFromString:signature];
+        // Use helper method (defined below)
+        cmsTagSignature tagSig = 0;
+        if ([signature length] == 4) {
+            const char *chars = [signature UTF8String];
+            tagSig |= ((cmsUInt32Number)chars[0]) << 24;
+            tagSig |= ((cmsUInt32Number)chars[1]) << 16;
+            tagSig |= ((cmsUInt32Number)chars[2]) << 8;
+            tagSig |= ((cmsUInt32Number)chars[3]);
+        }
         
         // Write tag based on type
         if ([tag isKindOfClass:[ICCTagTRC class]]) {
