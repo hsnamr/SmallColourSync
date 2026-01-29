@@ -25,6 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (id)initWithView:(NSView *)view; // Uses default backend
 - (void)render;
 - (void)addGamutModel:(Gamut3DModel *)model;
+- (void)clearGamutModels;
 - (void)setLabSpaceModel:(CIELABSpaceModel *)model;
 - (void)handleMouseDrag:(NSPoint)delta;
 - (void)handleZoom:(float)delta;

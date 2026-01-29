@@ -64,6 +64,12 @@
     }
 }
 
+- (void)clearGamutModels {
+    if (backend) {
+        [backend clearGamutModels];
+    }
+}
+
 - (void)setLabSpaceModel:(CIELABSpaceModel *)model {
     if (backend) {
         [backend setLabSpaceModel:model];
