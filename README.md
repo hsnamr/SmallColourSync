@@ -1,4 +1,4 @@
-# SmallICCer
+# SmallColourSync
 
 ICC Color Profile Editor and Visualizer
 

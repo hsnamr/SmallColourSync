@@ -97,7 +97,7 @@ run_test() {
 
 # Common flags
 COMMON_CFLAGS="-MMD -MP -DGNUSTEP -DGNUSTEP_BASE_LIBRARY=1 -DGNU_GUI_LIBRARY=1 -DGNU_RUNTIME=1 -fno-strict-aliasing -fexceptions -fobjc-exceptions -D_NATIVE_OBJC_EXCEPTIONS -pthread -fPIC -Wall -DGSWARN -DGSDIAGNOSE -Wno-import -g -O2 -fconstant-string-class=NSConstantString -pthread"
-COMMON_INCLUDES="-I. -Itests -Icolor -Iicc -Iicc/tags -Ivisualization -ISmallStep/SmallStep/Core -I$GNUSTEP_HEADERS -I/usr/local/include/GNUstep -I/usr/include/x86_64-linux-gnu/GNUstep -I/usr/include"
+COMMON_INCLUDES="-I. -Itests -Iapp -Icolor -Iicc -Iicc/tags -Ivisualization -ISmallStep/SmallStep/Core -I$GNUSTEP_HEADERS -I/usr/local/include/GNUstep -I/usr/include/x86_64-linux-gnu/GNUstep -I/usr/include"
 # Find GNUStep library paths - try multiple locations
 GNUSTEP_LIB_PATHS=""
 for path in "$HOME/GNUstep/Library/Libraries" "/usr/local/lib/GNUstep" "/usr/lib/x86_64-linux-gnu/GNUstep" "/usr/lib/GNUstep" "/usr/lib"; do
@@ -135,6 +135,10 @@ run_test "ICCTagEditing" "icc/ICCProfile.m icc/tags/ICCTag.m icc/tags/ICCTagTRC.
 
 run_test "CIELABSpaceModel" "visualization/CIELABSpaceModel.m" "$COMMON_INCLUDES" "$COMMON_LIBS" "$COMMON_CFLAGS"
 
+run_test "SettingsManager" "app/SettingsManager.m" "$COMMON_INCLUDES" "$COMMON_LIBS" "$COMMON_CFLAGS"
+
+run_test "GamutComparator" "visualization/GamutComparator.m visualization/Gamut3DModel.m" "$COMMON_INCLUDES" "$COMMON_LIBS" "$COMMON_CFLAGS"
+
 # RenderBackend test - only compile backends that are available
 # Skip Vulkan and Metal for now (they require platform-specific headers)
 # The test will still verify backend factory and OpenGL backend creation
@@ -157,7 +161,7 @@ if [ -z "$GLU_LIBS" ]; then
         GLU_LIBS="-lGLU"
     fi
 fi
-run_test "RenderBackend" "visualization/RenderBackend.m visualization/OpenGLBackend.m ../SmallStep/SmallStep/Core/SSPlatform.m" "$COMMON_INCLUDES -I../SmallStep/SmallStep/Core" "$COMMON_LIBS -lgnustep-gui $OPENGL_LIBS $GLU_LIBS" "$COMMON_CFLAGS"
+run_test "RenderBackend" "visualization/RenderBackend.m visualization/OpenGLBackend.m visualization/Gamut3DModel.m visualization/CIELABSpaceModel.m visualization/Renderer3D.m app/SettingsManager.m ../SmallStep/SmallStep/Core/SSPlatform.m" "$COMMON_INCLUDES -I../SmallStep/SmallStep/Core -I../app" "$COMMON_LIBS -lgnustep-gui $OPENGL_LIBS $GLU_LIBS" "$COMMON_CFLAGS"
 
 # Tests requiring LittleCMS
 if [ "$HAVE_LCMS" = "1" ]; then

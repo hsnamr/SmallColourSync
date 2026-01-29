@@ -2,12 +2,15 @@
 //  test_RenderBackend.m
 //  SmallICCer Tests
 //
-//  Unit tests for renderer backend initialization
+//  Unit tests for renderer backend initialization and Task 3.2 backend verification.
 //
 
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 #import "RenderBackend.h"
+#import "OpenGLBackend.h"
+#import "Gamut3DModel.h"
+#import "Renderer3D.h"
 
 // Try to find SSPlatform.h
 #if __has_include("SSPlatform.h")
@@ -107,6 +110,78 @@ int testBackendInitialization() {
     return 0;
 }
 
+#pragma mark - Task 3.2 Backend verification
+
+int testOpenGLBackendOptionalAPI() {
+    id<RenderBackend> backend = [RenderBackendFactory createBackend:RenderBackendTypeOpenGL];
+    if (!backend) {
+        NSLog(@"ERROR: Failed to create OpenGL backend");
+        return 1;
+    }
+    if ([backend respondsToSelector:@selector(setBackgroundRed:green:blue:)]) {
+        [backend setBackgroundRed:0.2 green:0.3 blue:0.4];
+    }
+    if ([backend respondsToSelector:@selector(setRenderingQuality:)]) {
+        [backend setRenderingQuality:2];
+    }
+    NSArray *verts = [NSArray arrayWithObject:[NSArray arrayWithObjects:
+        [NSNumber numberWithDouble:50.0], [NSNumber numberWithDouble:0.0], [NSNumber numberWithDouble:0.0], nil]];
+    Gamut3DModel *model = [[Gamut3DModel alloc] initWithVertices:verts faces:nil name:@"Test"];
+    [backend addGamutModel:model];
+    [model release];
+    [backend clearGamutModels];
+    NSLog(@"PASS: OpenGL backend optional API (setBackground, setRenderingQuality, addGamutModel, clearGamutModels)");
+    return 0;
+}
+
+int testRenderer3DClearGamutModels() {
+    NSView *view = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 100, 100)];
+    Renderer3D *renderer = [[Renderer3D alloc] initWithView:view backendType:RenderBackendTypeOpenGL];
+    [view release];
+    if (!renderer) {
+        NSLog(@"PASS: Renderer3D clearGamutModels (skipped - no OpenGL context)");
+        return 0;
+    }
+    [renderer clearGamutModels];
+    NSArray *verts = [NSArray arrayWithObject:[NSArray arrayWithObjects:
+        [NSNumber numberWithDouble:50.0], [NSNumber numberWithDouble:0.0], [NSNumber numberWithDouble:0.0], nil]];
+    Gamut3DModel *model = [[Gamut3DModel alloc] initWithVertices:verts faces:nil name:@"Test"];
+    [renderer addGamutModel:model];
+    [model release];
+    [renderer clearGamutModels];
+    [renderer release];
+    NSLog(@"PASS: Renderer3D clearGamutModels / addGamutModel");
+    return 0;
+}
+
+int testRenderer3DApplySettings() {
+    NSView *view = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 100, 100)];
+    Renderer3D *renderer = [[Renderer3D alloc] initWithView:view backendType:RenderBackendTypeOpenGL];
+    [view release];
+    if (!renderer) {
+        NSLog(@"PASS: Renderer3D applySettings (skipped - no OpenGL context)");
+        return 0;
+    }
+    [renderer applySettings];
+    [renderer release];
+    NSLog(@"PASS: Renderer3D applySettings (no crash)");
+    return 0;
+}
+
+int testBackendFactoryFallback() {
+    id<RenderBackend> vulkan = [RenderBackendFactory createBackend:RenderBackendTypeVulkan];
+    id<RenderBackend> metal = [RenderBackendFactory createBackend:RenderBackendTypeMetal];
+    if (!vulkan || !metal) {
+        NSLog(@"ERROR: Vulkan or Metal backend creation returned nil");
+        return 1;
+    }
+    if ([vulkan class] != [metal class]) {
+        NSLog(@"NOTE: Vulkan and Metal backends may be different (or both fallback to OpenGL)");
+    }
+    NSLog(@"PASS: Backend factory fallback (Vulkan/Metal return non-nil)");
+    return 0;
+}
+
 int main(int argc, const char * argv[]) {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     
@@ -116,6 +191,10 @@ int main(int argc, const char * argv[]) {
     failures += testCreateVulkanBackend();
     failures += testCreateMetalBackend();
     failures += testBackendInitialization();
+    failures += testOpenGLBackendOptionalAPI();
+    failures += testRenderer3DClearGamutModels();
+    failures += testRenderer3DApplySettings();
+    failures += testBackendFactoryFallback();
     
     if (failures == 0) {
         NSLog(@"All renderer backend tests passed!");

@@ -1,4 +1,4 @@
-# SmallICCer Implementation Plan
+# SmallColourSync Implementation Plan
 
 Based on README.md requirements
 

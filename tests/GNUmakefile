@@ -56,10 +56,10 @@ test_GamutCalculator_OBJCFLAGS = -DHAVE_LCMS=1
 endif
 include $(GNUSTEP_MAKEFILES)/tool.make
 
-# Test 5: RenderBackend
+# Test 5: RenderBackend (Task 3.2 backend verification)
 TOOL_NAME = test_RenderBackend
-test_RenderBackend_OBJC_FILES = test_RenderBackend.m
-test_RenderBackend_INCLUDE_DIRS = -I.. -I../visualization -I../SmallStep/SmallStep/Core
+test_RenderBackend_OBJC_FILES = test_RenderBackend.m ../visualization/RenderBackend.m ../visualization/OpenGLBackend.m ../visualization/Gamut3DModel.m ../visualization/CIELABSpaceModel.m ../visualization/Renderer3D.m ../app/SettingsManager.m
+test_RenderBackend_INCLUDE_DIRS = -I.. -I../visualization -I../app -I../SmallStep/SmallStep/Core
 test_RenderBackend_TOOL_LIBS = -lgnustep-base -lgnustep-gui -lSmallStep
 include $(GNUSTEP_MAKEFILES)/tool.make
 
@@ -75,4 +75,18 @@ TOOL_NAME = test_ICCTagEditing
 test_ICCTagEditing_OBJC_FILES = test_ICCTagEditing.m
 test_ICCTagEditing_INCLUDE_DIRS = -I.. -I../icc -I../icc/tags
 test_ICCTagEditing_TOOL_LIBS = -lgnustep-base
+include $(GNUSTEP_MAKEFILES)/tool.make
+
+# Test 8: SettingsManager
+TOOL_NAME = test_SettingsManager
+test_SettingsManager_OBJC_FILES = test_SettingsManager.m ../app/SettingsManager.m
+test_SettingsManager_INCLUDE_DIRS = -I.. -I../app
+test_SettingsManager_TOOL_LIBS = -lgnustep-base
+include $(GNUSTEP_MAKEFILES)/tool.make
+
+# Test 9: GamutComparator
+TOOL_NAME = test_GamutComparator
+test_GamutComparator_OBJC_FILES = test_GamutComparator.m ../visualization/GamutComparator.m ../visualization/Gamut3DModel.m
+test_GamutComparator_INCLUDE_DIRS = -I.. -I../visualization
+test_GamutComparator_TOOL_LIBS = -lgnustep-base
 include $(GNUSTEP_MAKEFILES)/tool.make

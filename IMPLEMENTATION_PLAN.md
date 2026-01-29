@@ -1,6 +1,6 @@
 # Implementation Plan - Missing & Incomplete Features
 
-This document outlines the tasks needed to complete SmallICCer based on the comparison with the PLAN.
+This document outlines the tasks needed to complete SmallColourSync based on the comparison with the PLAN.
 
 **Current Status**: ~75-80% Complete  
 **Target**: 100% Feature Complete
