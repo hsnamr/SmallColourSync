@@ -11,6 +11,7 @@
 #import "Gamut3DModel.h"
 #import "CIELABSpaceModel.h"
 #import "GamutCalculator.h"
+#import "SettingsManager.h"
 
 @implementation GamutViewPanel
 
@@ -45,9 +46,9 @@
 
 - (void)setPreferredBackend:(RenderBackendType)backendType {
     preferredBackend = backendType;
-    // Reinitialize renderer with new backend
     [renderer release];
     renderer = [[Renderer3D alloc] initWithView:self backendType:backendType];
+    [renderer applySettings];
 }
 
 - (void)displayProfile:(ICCProfile *)profile {
@@ -67,8 +68,12 @@
     [renderer addGamutModel:gamutModel];
     [gamutModel release];
     
-    // Set up Lab space model
+    // Set up Lab space model (grid/axes from settings)
     CIELABSpaceModel *labModel = [[CIELABSpaceModel alloc] init];
+    SettingsManager *settings = [SettingsManager sharedManager];
+    [settings loadSettings];
+    [labModel setShowAxes:[settings showAxes]];
+    [labModel setShowGrid:[settings showGrid]];
     [renderer setLabSpaceModel:labModel];
     [labModel release];
     
@@ -97,6 +102,14 @@
 - (void)scrollWheel:(NSEvent *)event {
     float delta = [event deltaY] * 0.1;
     [renderer handleZoom:delta];
+    [self setNeedsDisplay:YES];
+}
+
+- (void)refreshFromSettings {
+    [renderer applySettings];
+    if (currentProfile) {
+        [self displayProfile:currentProfile]; // Rebuild lab model with current showGrid/showAxes
+    }
     [self setNeedsDisplay:YES];
 }
 

@@ -21,7 +21,7 @@
 - (id)init {
     self = [super init];
     if (self) {
-        settingsManager = [[SettingsManager alloc] init];
+        settingsManager = [SettingsManager sharedManager];
         activeProfile = nil;
     }
     return self;
@@ -71,7 +71,7 @@
 - (void)dealloc {
     [mainWindow release];
     [activeProfile release];
-    [settingsManager release];
+    /* settingsManager is shared singleton, do not release */
     [super dealloc];
 }
 

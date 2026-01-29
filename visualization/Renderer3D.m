@@ -9,6 +9,7 @@
 #import "Gamut3DModel.h"
 #import "CIELABSpaceModel.h"
 #import "RenderBackend.h"
+#import "SettingsManager.h"
 
 @implementation Renderer3D
 
@@ -83,6 +84,20 @@
 - (void)setViewportWidth:(float)width height:(float)height {
     if (backend) {
         [backend setViewportWidth:width height:height];
+    }
+}
+
+- (void)applySettings {
+    if (!backend) return;
+    SettingsManager *settings = [SettingsManager sharedManager];
+    [settings loadSettings];
+    if ([backend respondsToSelector:@selector(setBackgroundRed:green:blue:)]) {
+        [backend setBackgroundRed:[settings backgroundColorRed]
+                           green:[settings backgroundColorGreen]
+                            blue:[settings backgroundColorBlue]];
+    }
+    if ([backend respondsToSelector:@selector(setRenderingQuality:)]) {
+        [backend setRenderingQuality:[settings renderingQuality]];
     }
 }
 

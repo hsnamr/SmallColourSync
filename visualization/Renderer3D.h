@@ -29,6 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)handleMouseDrag:(NSPoint)delta;
 - (void)handleZoom:(float)delta;
 - (void)setViewportWidth:(float)width height:(float)height;
+- (void)applySettings; // Apply SettingsManager (background color, rendering quality)
 - (RenderBackendType)backendType;
 
 @end

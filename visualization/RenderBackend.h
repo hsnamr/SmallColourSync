@@ -30,6 +30,10 @@ typedef enum {
 - (void)setLabSpaceModel:(CIELABSpaceModel *)model;
 - (void)clearGamutModels;
 
+@optional
+- (void)setBackgroundRed:(CGFloat)r green:(CGFloat)g blue:(CGFloat)b;
+- (void)setRenderingQuality:(NSInteger)quality; // 0=low, 1=medium, 2=high
+
 @end
 
 @interface RenderBackendFactory : NSObject

@@ -17,6 +17,8 @@ NS_ASSUME_NONNULL_BEGIN
     float rotationX, rotationY;
     float zoom;
     float viewportWidth, viewportHeight;
+    float backgroundRed, backgroundGreen, backgroundBlue;
+    NSInteger renderingQuality;
 }
 
 @end

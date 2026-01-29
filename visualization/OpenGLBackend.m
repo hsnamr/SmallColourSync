@@ -31,6 +31,10 @@
         zoom = 1.0;
         viewportWidth = 800.0;
         viewportHeight = 600.0;
+        backgroundRed = 0.1f;
+        backgroundGreen = 0.1f;
+        backgroundBlue = 0.1f;
+        renderingQuality = 1; // medium
     }
     return self;
 }
@@ -60,7 +64,7 @@
     
     float aspect = viewportWidth / viewportHeight;
     
-    glClearColor(0.1, 0.1, 0.1, 1.0);
+    glClearColor(backgroundRed, backgroundGreen, backgroundBlue, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     glEnable(GL_DEPTH_TEST);
@@ -178,6 +182,16 @@
 
 - (void)clearGamutModels {
     [gamutModels removeAllObjects];
+}
+
+- (void)setBackgroundRed:(CGFloat)r green:(CGFloat)g blue:(CGFloat)b {
+    backgroundRed = (float)r;
+    backgroundGreen = (float)g;
+    backgroundBlue = (float)b;
+}
+
+- (void)setRenderingQuality:(NSInteger)quality {
+    renderingQuality = quality;
 }
 
 - (void)dealloc {

@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (id)initWithBackendType:(RenderBackendType)backendType;
 - (void)displayProfile:(ICCProfile *)profile;
 - (void)setPreferredBackend:(RenderBackendType)backendType;
+- (void)refreshFromSettings; // Reapply settings (e.g. after preferences change) and redraw
 
 @end
 
