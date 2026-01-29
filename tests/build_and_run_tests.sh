@@ -129,7 +129,7 @@ else
 fi
 
 # Run tests
-run_test "ColorConverter" "color/ColorConverter.m" "$COMMON_INCLUDES" "$COMMON_LIBS" "$COMMON_CFLAGS"
+run_test "ColorConverter" "color/ColorConverter.m color/ColorSpace.m color/StandardColorSpaces.m" "$COMMON_INCLUDES" "$COMMON_LIBS" "$COMMON_CFLAGS"
 
 run_test "ICCTagEditing" "icc/ICCProfile.m icc/tags/ICCTag.m icc/tags/ICCTagTRC.m icc/tags/ICCTagMatrix.m icc/tags/ICCTagLUT.m icc/tags/ICCTagMetadata.m" "$COMMON_INCLUDES" "$COMMON_LIBS" "$COMMON_CFLAGS"
 

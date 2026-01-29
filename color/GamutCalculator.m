@@ -14,51 +14,20 @@
 @implementation GamutCalculator
 
 - (NSArray *)computeGamutForProfile:(ICCProfile *)profile {
-    // Sample RGB space and convert through profile to Lab
-    // This is a simplified implementation - a full version would
-    // use the profile's actual transform (LUTs, matrices, etc.)
-    
-    NSMutableArray *labPoints = [NSMutableArray array];
-    NSUInteger resolution = 17; // Sample 17^3 points
-    
-    NSUInteger r, g, b;
-    for (r = 0; r < resolution; r++) {
-        for (g = 0; g < resolution; g++) {
-            for (b = 0; b < resolution; b++) {
-                double rgb[3] = {
-                    (double)r / (resolution - 1),
-                    (double)g / (resolution - 1),
-                    (double)b / (resolution - 1)
-                };
-                
-                // Convert RGB to XYZ (simplified - would use profile transform)
-                double xyz[3];
-                [ColorConverter rgbToXyz:rgb xyz:xyz 
-                              primaries:nil whitePoint:nil];
-                
-                // Convert XYZ to Lab
-                double whitePoint[3] = {0.9642, 1.0, 0.8249}; // D50
-                double lab[3];
-                [ColorConverter xyzToLab:xyz lab:lab whitePoint:whitePoint];
-                
-                // Store as NSArray
-                NSArray *point = [NSArray arrayWithObjects:
-                                 [NSNumber numberWithDouble:lab[0]],
-                                 [NSNumber numberWithDouble:lab[1]],
-                                 [NSNumber numberWithDouble:lab[2]],
-                                 nil];
-                [labPoints addObject:point];
-            }
-        }
-    }
-    
-    return labPoints;
+    // Sample RGB space and convert to Lab. Simplified: uses sRGB→XYZ (no profile LUT).
+    // A full implementation would use the profile's actual transform (LUTs, matrices).
+    ColorSpace *sRGB = [StandardColorSpaces sRGB];
+    return [self computeGamutForColorSpace:sRGB];
 }
 
 - (NSArray *)computeGamutForColorSpace:(ColorSpace *)colorSpace {
     NSMutableArray *labPoints = [NSMutableArray array];
     NSUInteger resolution = 17;
     
+    // XYZ white point for Lab (from color space xy white point)
+    double whitePointXyz[3];
+    [ColorConverter whitePointXyzFromColorSpace:[colorSpace whitePoint] outXyz:whitePointXyz];
+    
     NSUInteger r, g, b;
     for (r = 0; r < resolution; r++) {
         for (g = 0; g < resolution; g++) {
@@ -69,18 +38,13 @@
                     (double)b / (resolution - 1)
                 };
                 
-                // Convert using color space primaries
                 double xyz[3];
                 [ColorConverter rgbToXyz:rgb xyz:xyz 
                               primaries:[colorSpace primaries] 
                              whitePoint:[colorSpace whitePoint]];
                 
-                // Convert to Lab
-                NSArray *wp = [colorSpace whitePoint];
-                // Convert xy to XYZ white point (simplified)
-                double whitePoint[3] = {0.9642, 1.0, 0.8249}; // D50 approximation
                 double lab[3];
-                [ColorConverter xyzToLab:xyz lab:lab whitePoint:whitePoint];
+                [ColorConverter xyzToLab:xyz lab:lab whitePoint:whitePointXyz];
                 
                 NSArray *point = [NSArray arrayWithObjects:
                                  [NSNumber numberWithDouble:lab[0]],
