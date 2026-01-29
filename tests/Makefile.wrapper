@@ -1,0 +1,16 @@
+# Wrapper Makefile for building all tests
+# Note: GNUStep doesn't support multiple TOOL_NAME in one makefile
+# This is a workaround - each test should be built separately
+
+.PHONY: all clean
+
+all:
+	@echo "Building all tests..."
+	@for test in ColorConverter ICCParser ICCWriter GamutCalculator RenderBackend CIELABSpaceModel ICCTagEditing; do \
+		echo "Building test_$$test..."; \
+		make -f GNUmakefile.single TOOL=$$test || exit 1; \
+	done
+	@echo "All tests built successfully!"
+
+clean:
+	rm -rf obj/*
