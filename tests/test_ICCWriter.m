@@ -11,6 +11,10 @@
 #import "ICCParser.h"
 #import "ICCTagTRC.h"
 
+#ifdef HAVE_LCMS
+#include <lcms2.h>
+#endif
+
 int testWriterInitialization() {
     ICCWriter *writer = [[ICCWriter alloc] init];
     if (!writer) {
@@ -23,12 +27,13 @@ int testWriterInitialization() {
 }
 
 #ifdef HAVE_LCMS
+#include <lcms2.h>
+
 int testWriteProfile() {
     ICCParser *parser = [[ICCParser alloc] init];
     ICCWriter *writer = [[ICCWriter alloc] init];
     
     // Create a test profile
-    #include <lcms2.h>
     
     cmsCIExyY whitePoint;
     cmsWhitePointFromTemp(&whitePoint, 5000);

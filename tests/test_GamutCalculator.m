@@ -12,6 +12,10 @@
 #import "StandardColorSpaces.h"
 #import "ColorSpace.h"
 
+#ifdef HAVE_LCMS
+#include <lcms2.h>
+#endif
+
 int testGamutCalculatorInitialization() {
     GamutCalculator *calculator = [[GamutCalculator alloc] init];
     if (!calculator) {
@@ -24,12 +28,13 @@ int testGamutCalculatorInitialization() {
 }
 
 #ifdef HAVE_LCMS
+#include <lcms2.h>
+
 int testComputeGamutForProfile() {
     GamutCalculator *calculator = [[GamutCalculator alloc] init];
     ICCParser *parser = [[ICCParser alloc] init];
     
     // Create a test profile
-    #include <lcms2.h>
     
     cmsCIExyY whitePoint;
     cmsWhitePointFromTemp(&whitePoint, 5000);

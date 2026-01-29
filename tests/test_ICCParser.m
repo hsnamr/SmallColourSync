@@ -12,6 +12,10 @@
 #import "ICCTagTRC.h"
 #import "ICCTagMetadata.h"
 
+#ifdef HAVE_LCMS
+#include <lcms2.h>
+#endif
+
 int testParserInitialization() {
     ICCParser *parser = [[ICCParser alloc] init];
     if (!parser) {
@@ -71,11 +75,12 @@ int testParseNonexistentFile() {
 }
 
 #ifdef HAVE_LCMS
+#include <lcms2.h>
+
 int testParseValidProfile() {
     ICCParser *parser = [[ICCParser alloc] init];
     
     // Create a minimal valid ICC profile using LittleCMS
-    #include <lcms2.h>
     
     cmsCIExyY whitePoint;
     cmsWhitePointFromTemp(&whitePoint, 5000); // D50

@@ -8,7 +8,7 @@
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 #import "RenderBackend.h"
-#import "SSPlatform.h"
+#import "../SmallStep/SmallStep/Core/SSPlatform.h"
 
 int testRenderBackendFactory() {
     // Test default backend type

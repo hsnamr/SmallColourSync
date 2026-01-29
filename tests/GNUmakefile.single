@@ -31,13 +31,13 @@ COMMON_LIBS = -lgnustep-base
 
 # Test-specific configuration
 ifeq ($(TOOL),ColorConverter)
-$(TOOL_NAME)_OBJC_FILES = test_ColorConverter.m
+$(TOOL_NAME)_OBJC_FILES = test_ColorConverter.m ../color/ColorConverter.m
 $(TOOL_NAME)_INCLUDE_DIRS = -I.. -I../color
 $(TOOL_NAME)_TOOL_LIBS = $(COMMON_LIBS)
 endif
 
 ifeq ($(TOOL),ICCParser)
-$(TOOL_NAME)_OBJC_FILES = test_ICCParser.m
+$(TOOL_NAME)_OBJC_FILES = test_ICCParser.m ../icc/ICCParser.m ../icc/ICCProfile.m ../icc/ICCTag.m ../icc/tags/ICCTagTRC.m ../icc/tags/ICCTagMetadata.m
 $(TOOL_NAME)_INCLUDE_DIRS = -I.. -I../icc -I../icc/tags $(LCMS_INCLUDE)
 $(TOOL_NAME)_TOOL_LIBS = $(COMMON_LIBS) $(LCMS_LIBS)
 ifdef HAVE_LCMS
@@ -46,7 +46,7 @@ endif
 endif
 
 ifeq ($(TOOL),ICCWriter)
-$(TOOL_NAME)_OBJC_FILES = test_ICCWriter.m
+$(TOOL_NAME)_OBJC_FILES = test_ICCWriter.m ../icc/ICCWriter.m ../icc/ICCParser.m ../icc/ICCProfile.m ../icc/ICCTag.m ../icc/tags/ICCTagTRC.m
 $(TOOL_NAME)_INCLUDE_DIRS = -I.. -I../icc -I../icc/tags $(LCMS_INCLUDE)
 $(TOOL_NAME)_TOOL_LIBS = $(COMMON_LIBS) $(LCMS_LIBS)
 ifdef HAVE_LCMS
@@ -55,7 +55,7 @@ endif
 endif
 
 ifeq ($(TOOL),GamutCalculator)
-$(TOOL_NAME)_OBJC_FILES = test_GamutCalculator.m
+$(TOOL_NAME)_OBJC_FILES = test_GamutCalculator.m ../color/GamutCalculator.m ../color/ColorConverter.m ../color/ColorSpace.m ../color/StandardColorSpaces.m ../icc/ICCProfile.m ../icc/ICCParser.m ../icc/ICCTag.m
 $(TOOL_NAME)_INCLUDE_DIRS = -I.. -I../color -I../icc $(LCMS_INCLUDE)
 $(TOOL_NAME)_TOOL_LIBS = $(COMMON_LIBS) $(LCMS_LIBS)
 ifdef HAVE_LCMS
@@ -64,19 +64,19 @@ endif
 endif
 
 ifeq ($(TOOL),RenderBackend)
-$(TOOL_NAME)_OBJC_FILES = test_RenderBackend.m
+$(TOOL_NAME)_OBJC_FILES = test_RenderBackend.m ../visualization/RenderBackend.m
 $(TOOL_NAME)_INCLUDE_DIRS = -I.. -I../visualization -I../SmallStep/SmallStep/Core
 $(TOOL_NAME)_TOOL_LIBS = $(COMMON_LIBS) -lgnustep-gui -lSmallStep
 endif
 
 ifeq ($(TOOL),CIELABSpaceModel)
-$(TOOL_NAME)_OBJC_FILES = test_CIELABSpaceModel.m
+$(TOOL_NAME)_OBJC_FILES = test_CIELABSpaceModel.m ../visualization/CIELABSpaceModel.m
 $(TOOL_NAME)_INCLUDE_DIRS = -I.. -I../visualization
 $(TOOL_NAME)_TOOL_LIBS = $(COMMON_LIBS)
 endif
 
 ifeq ($(TOOL),ICCTagEditing)
-$(TOOL_NAME)_OBJC_FILES = test_ICCTagEditing.m
+$(TOOL_NAME)_OBJC_FILES = test_ICCTagEditing.m ../icc/ICCProfile.m ../icc/ICCTag.m ../icc/tags/ICCTagTRC.m ../icc/tags/ICCTagMatrix.m ../icc/tags/ICCTagLUT.m ../icc/tags/ICCTagMetadata.m
 $(TOOL_NAME)_INCLUDE_DIRS = -I.. -I../icc -I../icc/tags
 $(TOOL_NAME)_TOOL_LIBS = $(COMMON_LIBS)
 endif
