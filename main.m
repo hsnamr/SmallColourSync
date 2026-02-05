@@ -3,19 +3,23 @@
 //  SmallICCer
 //
 //  ICC Color Profile Editor and Visualizer
-//  Entry point for the application
+//  Entry point for the application. Uses SmallStep for app lifecycle.
 //
 
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 #import "AppController.h"
+#import "SmallStep.h"
 
 int main(int argc, const char * argv[]) {
+#if defined(GNUSTEP) && !__has_feature(objc_arc)
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    NSApplication *application = [NSApplication sharedApplication];
-    AppController *appController = [[AppController alloc] init];
-    [application setDelegate:appController];
-    [application run];
+#endif
+    id<SSAppDelegate> delegate = [[AppController alloc] init];
+    [SSHostApplication runWithDelegate:delegate];
+#if defined(GNUSTEP) && !__has_feature(objc_arc)
+    [delegate release];
     [pool release];
+#endif
     return 0;
 }

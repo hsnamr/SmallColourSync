@@ -27,12 +27,13 @@
     return self;
 }
 
-- (void)applicationDidFinishLaunching:(NSNotification *)notification {
+- (void)applicationDidFinishLaunching {
     mainWindow = [[MainWindow alloc] initWithAppController:self];
     [mainWindow makeKeyAndOrderFront:nil];
 }
 
 - (BOOL)applicationShouldTerminateAfterLastWindowClosed:(id)sender {
+    (void)sender;
     return YES;
 }
 
